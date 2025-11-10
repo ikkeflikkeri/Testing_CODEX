@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nebula SubD Studio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: "Inter", "Segoe UI", sans-serif;
+      --bg: #0b0e14;
+      --panel: #121826ee;
+      --accent: #4cc0ff;
+      --accent-strong: #78f5d3;
+      --border: #1e2533;
+      --text: #e4e9f7;
+      --muted: #6f7a8f;
+      --danger: #ff6b6b;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      min-height: 100vh;
+      background: radial-gradient(circle at 20% 20%, rgba(76, 192, 255, 0.07), transparent 55%),
+        radial-gradient(circle at 80% 0%, rgba(120, 245, 211, 0.06), transparent 40%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      background: rgba(18, 24, 38, 0.88);
+      backdrop-filter: blur(18px);
+      border: 1px solid rgba(102, 179, 255, 0.12);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+      z-index: 3;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    header span {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    #app {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      padding: 88px 18px 18px;
+      width: 100%;
+    }
+
+    aside {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+      padding-right: 6px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 18px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 35px 90px rgba(6, 12, 28, 0.6);
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    .panel h3 {
+      margin: 18px 0 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    button,
+    label.button {
+      background: linear-gradient(135deg, rgba(76, 192, 255, 0.24), rgba(72, 75, 255, 0.08));
+      border: 1px solid rgba(76, 192, 255, 0.28);
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::after,
+    label.button::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(255, 255, 255, 0.35), transparent 55%);
+      opacity: 0;
+      transition: opacity 0.18s ease;
+    }
+
+    button:hover,
+    label.button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 15px 30px rgba(36, 122, 255, 0.22);
+      border-color: rgba(76, 192, 255, 0.5);
+    }
+
+    button:hover::after,
+    label.button:hover::after {
+      opacity: 1;
+    }
+
+    button.secondary,
+    label.button.secondary {
+      background: rgba(32, 40, 58, 0.9);
+      border-color: rgba(107, 118, 140, 0.4);
+    }
+
+    button.danger {
+      background: linear-gradient(135deg, rgba(255, 107, 107, 0.26), rgba(255, 99, 71, 0.12));
+      border-color: rgba(255, 107, 107, 0.38);
+    }
+
+    .slider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+    }
+
+    .slider span {
+      min-width: 38px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+    }
+
+    .radio-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .radio-group label {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(32, 40, 58, 0.82);
+      border: 1px solid rgba(64, 73, 92, 0.7);
+      cursor: pointer;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .radio-group input[type="radio"] {
+      display: none;
+    }
+
+    .radio-group input[type="radio"]:checked + span {
+      color: var(--accent-strong);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .stats div {
+      background: rgba(22, 28, 40, 0.88);
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid rgba(64, 73, 92, 0.6);
+      font-size: 0.78rem;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+    }
+
+    canvas {
+      border-radius: var(--radius);
+      background: radial-gradient(circle at 20% 20%, rgba(76, 192, 255, 0.14), transparent 60%),
+        radial-gradient(circle at 80% 20%, rgba(120, 245, 211, 0.12), transparent 55%),
+        #05070d;
+      border: 1px solid rgba(27, 34, 46, 0.85);
+      box-shadow: 0 45px 95px rgba(4, 9, 18, 0.85), inset 0 0 0 1px rgba(255, 255, 255, 0.015);
+    }
+
+    #viewport {
+      width: 100%;
+      height: clamp(420px, 72vh, 860px);
+      display: block;
+    }
+
+    .viewport-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .hotkeys,
+    .status {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 18px;
+      background: rgba(12, 17, 26, 0.85);
+      border-radius: 12px;
+      border: 1px solid rgba(64, 73, 92, 0.4);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+    }
+
+    .hotkeys span strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    @media (max-width: 1180px) {
+      #app {
+        grid-template-columns: 1fr;
+        padding-top: 120px;
+      }
+
+      aside {
+        order: 2;
+        flex-direction: row;
+        overflow-x: auto;
+        max-height: none;
+      }
+
+      aside .panel {
+        min-width: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Nebula SubD Studio</h1>
+    <span>AAA Browser Modeling</span>
+  </header>
+  <div id="app">
+    <aside>
+      <section class="panel" id="scene-panel">
+        <h2>Primitives &amp; Scene</h2>
+        <div class="button-grid">
+          <button data-primitive="box">Box</button>
+          <button data-primitive="sphere">Sphere</button>
+          <button data-primitive="cylinder">Cylinder</button>
+          <button data-primitive="plane">Plane</button>
+        </div>
+        <h3>Import</h3>
+        <div class="button-grid">
+          <label class="button secondary" for="import-gltf">glTF / GLB</label>
+          <button id="reset-scene" class="secondary">Reset</button>
+        </div>
+        <input type="file" id="import-gltf" accept=".gltf,.glb" />
+        <h3>Export</h3>
+        <button id="export-gltf">Export glTF (embedded)</button>
+      </section>
+
+      <section class="panel" id="model-panel">
+        <h2>Subdivision</h2>
+        <div class="slider">
+          <label for="subdivision-level">Level</label>
+          <input type="range" id="subdivision-level" min="0" max="4" step="1" value="2" />
+          <span id="subdivision-value">2</span>
+        </div>
+        <div class="stats" id="mesh-stats">
+          <div>
+            <strong>Control</strong><br />
+            <span id="control-stats">0 v / 0 f</span>
+          </div>
+          <div>
+            <strong>Preview</strong><br />
+            <span id="preview-stats">0 v / 0 f</span>
+          </div>
+        </div>
+        <h3>Selection Mode</h3>
+        <div class="radio-group" id="selection-mode">
+          <label>
+            <input type="radio" name="selection" value="vertex" checked />
+            <span>Vertex</span>
+          </label>
+          <label>
+            <input type="radio" name="selection" value="edge" />
+            <span>Edge</span>
+          </label>
+          <label>
+            <input type="radio" name="selection" value="face" />
+            <span>Face</span>
+          </label>
+        </div>
+        <h3>Crease Weight</h3>
+        <div class="slider">
+          <label for="crease-weight">Weight</label>
+          <input type="range" id="crease-weight" min="0" max="1" step="0.01" value="0" />
+          <span id="crease-value">0.00</span>
+        </div>
+        <p style="font-size:0.75rem;color:var(--muted);margin-top:12px;line-height:1.4;">
+          Click the model to select vertices, edges, or faces. Use <strong>W</strong>, <strong>E</strong>, <strong>R</strong> for translate/rotate/scale. Toggle world/local with <strong>Q</strong>.
+        </p>
+      </section>
+
+      <section class="panel" id="lighting-panel">
+        <h2>Look &amp; Feel</h2>
+        <div class="slider">
+          <label for="environment-intensity">Environment</label>
+          <input type="range" id="environment-intensity" min="0" max="2" step="0.01" value="1.1" />
+          <span id="environment-value">1.10</span>
+        </div>
+        <div class="slider">
+          <label for="exposure">Exposure</label>
+          <input type="range" id="exposure" min="0.5" max="2.0" step="0.01" value="1.0" />
+          <span id="exposure-value">1.00</span>
+        </div>
+        <div class="slider">
+          <label for="metalness">Metalness</label>
+          <input type="range" id="metalness" min="0" max="1" step="0.01" value="0.35" />
+          <span id="metalness-value">0.35</span>
+        </div>
+        <div class="slider">
+          <label for="roughness">Roughness</label>
+          <input type="range" id="roughness" min="0" max="1" step="0.01" value="0.18" />
+          <span id="roughness-value">0.18</span>
+        </div>
+      </section>
+    </aside>
+
+    <div class="viewport-wrapper">
+      <canvas id="viewport"></canvas>
+      <div class="hotkeys">
+        <span><strong>Orbit:</strong> LMB &middot; <strong>Pan:</strong> RMB &middot; <strong>Zoom:</strong> Scroll / MMB drag</span>
+        <span><strong>Snap:</strong> Hold Shift &middot; <strong>Reset Camera:</strong> Double-click background</span>
+      </div>
+      <div class="status" id="status-bar">
+        <span id="selection-status">No selection</span>
+        <span id="performance-status">FPS: --</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from 'https://unpkg.com/three@0.160.1/build/three.module.js';
+    import { OrbitControls } from 'https://unpkg.com/three@0.160.1/examples/jsm/controls/OrbitControls.js';
+    import { TransformControls } from 'https://unpkg.com/three@0.160.1/examples/jsm/controls/TransformControls.js';
+    import { SubdivisionModifier } from 'https://unpkg.com/three@0.160.1/examples/jsm/modifiers/SubdivisionModifier.js';
+    import { GLTFLoader } from 'https://unpkg.com/three@0.160.1/examples/jsm/loaders/GLTFLoader.js';
+    import { GLTFExporter } from 'https://unpkg.com/three@0.160.1/examples/jsm/exporters/GLTFExporter.js';
+    import { RoomEnvironment } from 'https://unpkg.com/three@0.160.1/examples/jsm/environments/RoomEnvironment.js';
+    import { BufferGeometryUtils } from 'https://unpkg.com/three@0.160.1/examples/jsm/utils/BufferGeometryUtils.js';
+
+    const canvas = document.getElementById('viewport');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true });
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(canvas.clientWidth || 1280, canvas.clientHeight || 720, false);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05070d);
+
+    const camera = new THREE.PerspectiveCamera(50, canvas.clientWidth / canvas.clientHeight, 0.01, 200);
+    camera.position.set(4.5, 3.5, 6.5);
+
+    const pmremGenerator = new THREE.PMREMGenerator(renderer);
+    const environment = pmremGenerator.fromScene(new RoomEnvironment(undefined, 0.04), 0.04).texture;
+    scene.environment = environment;
+    pmremGenerator.dispose();
+
+    const orbit = new OrbitControls(camera, renderer.domElement);
+    orbit.enableDamping = true;
+    orbit.enablePan = true;
+    orbit.enableZoom = true;
+    orbit.mouseButtons = {
+      LEFT: THREE.MOUSE.ROTATE,
+      MIDDLE: THREE.MOUSE.PAN,
+      RIGHT: THREE.MOUSE.DOLLY
+    };
+    orbit.keys = {
+      LEFT: 'ArrowLeft',
+      UP: 'ArrowUp',
+      RIGHT: 'ArrowRight',
+      BOTTOM: 'ArrowDown'
+    };
+    orbit.addEventListener('change', requestRender);
+
+    const transformControls = new TransformControls(camera, renderer.domElement);
+    transformControls.setSize(0.9);
+    transformControls.showX = transformControls.showY = transformControls.showZ = true;
+    transformControls.addEventListener('change', () => {
+      if (transformControls.dragging) {
+        applyTransformSnapshot();
+        requestRender();
+      }
+    });
+    transformControls.addEventListener('dragging-changed', (event) => {
+      orbit.enabled = !event.value;
+      if (event.value) {
+        captureTransformSnapshot();
+      } else {
+        transformSnapshot = null;
+        updateControlGeometry();
+        updatePreviewGeometry();
+      }
+    });
+    scene.add(transformControls);
+
+    renderer.domElement.addEventListener('dblclick', () => {
+      camera.position.set(4.5, 3.5, 6.5);
+      orbit.target.set(0, 0, 0);
+      orbit.update();
+      requestRender();
+    });
+
+    const selectionHelper = new THREE.Object3D();
+    scene.add(selectionHelper);
+
+    const grid = new THREE.GridHelper(20, 20, 0x1f2a3c, 0x101621);
+    grid.material.opacity = 0.35;
+    grid.material.transparent = true;
+    scene.add(grid);
+
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), new THREE.MeshStandardMaterial({
+      color: 0x05080f,
+      metalness: 0,
+      roughness: 0.9
+    }));
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    scene.add(ground);
+
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.1);
+    keyLight.position.set(6, 10, 8);
+    keyLight.castShadow = true;
+    keyLight.shadow.mapSize.set(2048, 2048);
+    scene.add(keyLight);
+
+    const rimLight = new THREE.DirectionalLight(0x66ccff, 1.3);
+    rimLight.position.set(-6, 4, -6);
+    scene.add(rimLight);
+
+    const fillLight = new THREE.SpotLight(0xffdcb0, 1.1, 30, Math.PI / 6, 0.3, 1);
+    fillLight.position.set(2, 8, 2);
+    fillLight.castShadow = true;
+    scene.add(fillLight);
+
+    const ambient = new THREE.HemisphereLight(0x5f7aff, 0x0d1019, 0.55);
+    scene.add(ambient);
+
+    const controlMaterial = new THREE.MeshStandardMaterial({
+      color: 0x1c2536,
+      transparent: true,
+      opacity: 0.22,
+      metalness: 0.1,
+      roughness: 0.95,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+
+    const previewMaterial = new THREE.MeshPhysicalMaterial({
+      color: 0xbad4ff,
+      metalness: 0.35,
+      roughness: 0.18,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.08,
+      sheen: 0.15,
+      envMapIntensity: 1.1
+    });
+
+    const controlMesh = new THREE.Mesh(new THREE.BufferGeometry(), controlMaterial);
+    controlMesh.castShadow = false;
+    controlMesh.receiveShadow = false;
+    scene.add(controlMesh);
+
+    const previewMesh = new THREE.Mesh(new THREE.BufferGeometry(), previewMaterial);
+    previewMesh.castShadow = true;
+    previewMesh.receiveShadow = true;
+    scene.add(previewMesh);
+
+    let controlWireframe = null;
+
+    const loader = new GLTFLoader();
+    const exporter = new GLTFExporter();
+
+    const state = {
+      selectionMode: 'vertex',
+      selected: null,
+      creaseData: {
+        vertices: new Map(),
+        edges: new Map(),
+        faces: new Map()
+      },
+      subdivisionLevel: 2,
+      needsRender: true
+    };
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    let transformSnapshot = null;
+
+    const selectionVisual = new THREE.Group();
+    scene.add(selectionVisual);
+
+    const highlightMaterial = new THREE.MeshBasicMaterial({ color: 0x4cc0ff, transparent: true, opacity: 0.5, depthWrite: false, depthTest: false });
+    const highlightLineMaterial = new THREE.LineBasicMaterial({ color: 0x4cc0ff, linewidth: 3, depthTest: false, depthWrite: false });
+
+    const statsElement = document.getElementById('performance-status');
+    let lastFrameTime = performance.now();
+    let frameCount = 0;
+
+    function requestRender() {
+      state.needsRender = true;
+    }
+
+    function updatePerformanceStats() {
+      frameCount += 1;
+      const now = performance.now();
+      if (now - lastFrameTime > 500) {
+        const fps = (frameCount * 1000) / (now - lastFrameTime);
+        statsElement.textContent = `FPS: ${fps.toFixed(1)}`;
+        frameCount = 0;
+        lastFrameTime = now;
+      }
+    }
+
+    function makeEdgeKey(a, b) {
+      return a < b ? `${a}_${b}` : `${b}_${a}`;
+    }
+
+    function resetCreases() {
+      state.creaseData.vertices.clear();
+      state.creaseData.edges.clear();
+      state.creaseData.faces.clear();
+      updateCreaseUI();
+    }
+
+    function setControlGeometry(geometry) {
+      const geo = geometry.clone();
+      if (!geo.index) {
+        geo.setIndex([...Array(geo.attributes.position.count).keys()]);
+      }
+      const merged = BufferGeometryUtils.mergeVertices(geo, 1e-4);
+      geo.dispose();
+      merged.computeVertexNormals();
+      merged.computeBoundingBox();
+      merged.computeBoundingSphere();
+      merged.center();
+      merged.attributes.position.usage = THREE.DynamicDrawUsage;
+
+      if (controlMesh.geometry) {
+        controlMesh.geometry.dispose();
+      }
+      controlMesh.geometry = merged;
+      updateControlWireframe();
+      resetCreases();
+      clearSelection();
+      updateControlGeometry();
+      updatePreviewGeometry();
+    }
+
+    function updateControlGeometry() {
+      controlMesh.geometry.computeVertexNormals();
+      controlMesh.geometry.computeBoundingSphere();
+      if (controlWireframe) {
+        controlMesh.remove(controlWireframe);
+        controlWireframe.geometry.dispose();
+      }
+      const edges = new THREE.EdgesGeometry(controlMesh.geometry, 30);
+      controlWireframe = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: 0x2c6cff, transparent: true, opacity: 0.35, depthWrite: false })
+      );
+      controlWireframe.raycast = () => {};
+      controlMesh.add(controlWireframe);
+      controlMesh.geometry.attributes.position.needsUpdate = true;
+      updateSelectionVisual();
+      updateStats();
+      requestRender();
+    }
+
+    function updateStats() {
+      const controlPositions = controlMesh.geometry.attributes.position;
+      const controlIndex = controlMesh.geometry.index;
+      const previewPositions = previewMesh.geometry.attributes.position;
+      const previewIndex = previewMesh.geometry.index;
+      document.getElementById('control-stats').textContent = `${controlPositions ? controlPositions.count : 0} v / ${controlIndex ? controlIndex.count / 3 : 0} f`;
+      document.getElementById('preview-stats').textContent = `${previewPositions ? previewPositions.count : 0} v / ${previewIndex ? previewIndex.count / 3 : 0} f`;
+    }
+
+    function updateSelectionVisual() {
+      selectionVisual.children.slice().forEach((child) => {
+        selectionVisual.remove(child);
+        if (child.geometry) child.geometry.dispose();
+      });
+      if (!state.selected) {
+        return;
+      }
+      const controlGeometry = controlMesh.geometry;
+      const positions = controlGeometry.attributes.position;
+      controlMesh.updateMatrixWorld(true);
+      const toWorld = (vec) => controlMesh.localToWorld(vec.clone());
+
+      if (state.selected.type === 'vertex') {
+        const idx = state.selected.index;
+        const position = new THREE.Vector3(positions.getX(idx), positions.getY(idx), positions.getZ(idx));
+        const marker = new THREE.Mesh(new THREE.SphereGeometry(0.05, 24, 16), highlightMaterial);
+        marker.position.copy(toWorld(position));
+        marker.renderOrder = 2;
+        selectionVisual.add(marker);
+      } else if (state.selected.type === 'edge') {
+        const { a, b } = state.selected;
+        const va = new THREE.Vector3(positions.getX(a), positions.getY(a), positions.getZ(a));
+        const vb = new THREE.Vector3(positions.getX(b), positions.getY(b), positions.getZ(b));
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints([toWorld(va), toWorld(vb)]);
+        const line = new THREE.Line(lineGeometry, highlightLineMaterial);
+        line.renderOrder = 2;
+        selectionVisual.add(line);
+      } else if (state.selected.type === 'face') {
+        const { faceIndex } = state.selected;
+        const index = controlGeometry.index;
+        if (!index) return;
+        const a = index.getX(faceIndex * 3);
+        const b = index.getX(faceIndex * 3 + 1);
+        const c = index.getX(faceIndex * 3 + 2);
+        const va = new THREE.Vector3(positions.getX(a), positions.getY(a), positions.getZ(a));
+        const vb = new THREE.Vector3(positions.getX(b), positions.getY(b), positions.getZ(b));
+        const vc = new THREE.Vector3(positions.getX(c), positions.getY(c), positions.getZ(c));
+        const faceGeometry = new THREE.BufferGeometry();
+        faceGeometry.setFromPoints([toWorld(va), toWorld(vb), toWorld(vc)]);
+        faceGeometry.setIndex([0, 1, 2]);
+        const faceMesh = new THREE.Mesh(faceGeometry, highlightMaterial);
+        faceMesh.renderOrder = 2;
+        selectionVisual.add(faceMesh);
+      }
+    }
+
+    function clearSelection() {
+      state.selected = null;
+      transformControls.detach();
+      selectionHelper.visible = false;
+      updateSelectionVisual();
+      updateSelectionStatus();
+      updateCreaseUI();
+    }
+
+    function updateSelectionStatus() {
+      const status = document.getElementById('selection-status');
+      if (!state.selected) {
+        status.textContent = 'No selection';
+        return;
+      }
+      if (state.selected.type === 'vertex') {
+        status.textContent = `Vertex #${state.selected.index}`;
+      } else if (state.selected.type === 'edge') {
+        status.textContent = `Edge ${state.selected.a} ⇄ ${state.selected.b}`;
+      } else {
+        status.textContent = `Face #${state.selected.faceIndex}`;
+      }
+    }
+
+    function captureTransformSnapshot() {
+      if (!state.selected) {
+        transformSnapshot = null;
+        return;
+      }
+      const indices = getSelectedVertexIndices();
+      if (!indices.length) {
+        transformSnapshot = null;
+        return;
+      }
+      selectionHelper.updateMatrixWorld(true);
+      const originalLocalPositions = indices.map((idx) => {
+        const posAttr = controlMesh.geometry.attributes.position;
+        return new THREE.Vector3(posAttr.getX(idx), posAttr.getY(idx), posAttr.getZ(idx));
+      });
+      const startMatrixWorld = selectionHelper.matrixWorld.clone();
+      transformSnapshot = {
+        indices,
+        originalLocalPositions,
+        startMatrixWorld,
+        inverseStartMatrixWorld: startMatrixWorld.clone().invert()
+      };
+    }
+
+    function applyTransformSnapshot() {
+      if (!transformSnapshot || !state.selected) return;
+      const helperMatrixWorld = selectionHelper.matrixWorld;
+      const deltaMatrix = new THREE.Matrix4().multiplyMatrices(transformSnapshot.inverseStartMatrixWorld, helperMatrixWorld);
+      const posAttr = controlMesh.geometry.attributes.position;
+      transformSnapshot.indices.forEach((idx, i) => {
+        const originalLocal = transformSnapshot.originalLocalPositions[i].clone();
+        const worldPos = controlMesh.localToWorld(originalLocal.clone());
+        worldPos.applyMatrix4(deltaMatrix);
+        controlMesh.worldToLocal(worldPos);
+        posAttr.setXYZ(idx, worldPos.x, worldPos.y, worldPos.z);
+      });
+      posAttr.needsUpdate = true;
+      controlMesh.geometry.computeBoundingBox();
+      controlMesh.geometry.computeBoundingSphere();
+      requestRender();
+      updateSelectionVisual();
+    }
+
+    function getSelectedVertexIndices() {
+      if (!state.selected) return [];
+      const index = controlMesh.geometry.index;
+      if (!index) return [];
+      if (state.selected.type === 'vertex') {
+        return [state.selected.index];
+      }
+      if (state.selected.type === 'edge') {
+        return [state.selected.a, state.selected.b];
+      }
+      if (state.selected.type === 'face') {
+        const faceIndex = state.selected.faceIndex;
+        return [index.getX(faceIndex * 3), index.getX(faceIndex * 3 + 1), index.getX(faceIndex * 3 + 2)];
+      }
+      return [];
+    }
+
+    function positionSelectionHelper() {
+      const indices = getSelectedVertexIndices();
+      if (!indices.length) {
+        selectionHelper.visible = false;
+        transformControls.detach();
+        return;
+      }
+      const posAttr = controlMesh.geometry.attributes.position;
+      const centroid = new THREE.Vector3();
+      indices.forEach((idx) => {
+        centroid.x += posAttr.getX(idx);
+        centroid.y += posAttr.getY(idx);
+        centroid.z += posAttr.getZ(idx);
+      });
+      centroid.multiplyScalar(1 / indices.length);
+      controlMesh.localToWorld(centroid);
+      selectionHelper.position.copy(centroid);
+      selectionHelper.quaternion.copy(controlMesh.getWorldQuaternion(new THREE.Quaternion()));
+      selectionHelper.scale.set(1, 1, 1);
+      selectionHelper.visible = true;
+      selectionHelper.updateMatrixWorld(true);
+      transformControls.attach(selectionHelper);
+      requestRender();
+    }
+
+    function updateCreaseUI() {
+      const slider = document.getElementById('crease-weight');
+      const valueLabel = document.getElementById('crease-value');
+      const value = state.selected ? getCreaseValue(state.selected) : 0;
+      slider.value = value.toFixed(2);
+      valueLabel.textContent = Number(slider.value).toFixed(2);
+    }
+
+    function getCreaseValue(feature) {
+      if (!feature) return 0;
+      if (feature.type === 'vertex') {
+        return state.creaseData.vertices.get(feature.index) ?? 0;
+      }
+      if (feature.type === 'edge') {
+        return state.creaseData.edges.get(makeEdgeKey(feature.a, feature.b)) ?? 0;
+      }
+      if (feature.type === 'face') {
+        return state.creaseData.faces.get(feature.faceIndex) ?? 0;
+      }
+      return 0;
+    }
+
+    function setCreaseValue(feature, value) {
+      if (!feature) return;
+      const cleanValue = Math.max(0, Math.min(1, value));
+      const epsilon = 1e-3;
+      if (feature.type === 'vertex') {
+        if (cleanValue < epsilon) {
+          state.creaseData.vertices.delete(feature.index);
+        } else {
+          state.creaseData.vertices.set(feature.index, cleanValue);
+        }
+      } else if (feature.type === 'edge') {
+        const key = makeEdgeKey(feature.a, feature.b);
+        if (cleanValue < epsilon) {
+          state.creaseData.edges.delete(key);
+        } else {
+          state.creaseData.edges.set(key, cleanValue);
+        }
+      } else if (feature.type === 'face') {
+        if (cleanValue < epsilon) {
+          state.creaseData.faces.delete(feature.faceIndex);
+        } else {
+          state.creaseData.faces.set(feature.faceIndex, cleanValue);
+        }
+      }
+      updatePreviewGeometry();
+    }
+
+    function applyCreasesToGeometry(geometry) {
+      const indexAttr = geometry.index;
+      const posAttr = geometry.attributes.position;
+      const positions = [];
+      const indices = [];
+      const faceOriginals = [];
+      const faceIndexLookup = [];
+      const vertexCache = new Map();
+      const threshold = 0.5;
+
+      const getOrCreateVertex = (origIndex, faceIndex, shouldSplit) => {
+        const key = shouldSplit ? `${origIndex}_${faceIndex}` : `${origIndex}_shared`;
+          if (!vertexCache.has(key)) {
+            const idx = vertexCache.size;
+            positions.push(posAttr.getX(origIndex), posAttr.getY(origIndex), posAttr.getZ(origIndex));
+            vertexCache.set(key, idx);
+          }
+        return vertexCache.get(key);
+      };
+
+      const faceCount = indexAttr.count / 3;
+      for (let faceIndex = 0; faceIndex < faceCount; faceIndex++) {
+        const ai = indexAttr.getX(faceIndex * 3);
+        const bi = indexAttr.getX(faceIndex * 3 + 1);
+        const ci = indexAttr.getX(faceIndex * 3 + 2);
+
+        const faceCrease = state.creaseData.faces.get(faceIndex) ?? 0;
+        const abCrease = state.creaseData.edges.get(makeEdgeKey(ai, bi)) ?? 0;
+        const bcCrease = state.creaseData.edges.get(makeEdgeKey(bi, ci)) ?? 0;
+        const caCrease = state.creaseData.edges.get(makeEdgeKey(ci, ai)) ?? 0;
+
+        const vertexCreaseA = state.creaseData.vertices.get(ai) ?? 0;
+        const vertexCreaseB = state.creaseData.vertices.get(bi) ?? 0;
+        const vertexCreaseC = state.creaseData.vertices.get(ci) ?? 0;
+
+        const splitA = Math.max(faceCrease, vertexCreaseA, abCrease, caCrease) >= threshold;
+        const splitB = Math.max(faceCrease, vertexCreaseB, abCrease, bcCrease) >= threshold;
+        const splitC = Math.max(faceCrease, vertexCreaseC, bcCrease, caCrease) >= threshold;
+
+        const na = getOrCreateVertex(ai, faceIndex, splitA);
+        const nb = getOrCreateVertex(bi, faceIndex, splitB);
+        const nc = getOrCreateVertex(ci, faceIndex, splitC);
+
+        indices.push(na, nb, nc);
+        faceOriginals.push(ai, bi, ci);
+        faceIndexLookup.push(faceIndex);
+      }
+
+      const newGeometry = new THREE.BufferGeometry();
+      newGeometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      newGeometry.setIndex(indices);
+      newGeometry.computeVertexNormals();
+
+      const normals = newGeometry.attributes.normal;
+      const faceCountNew = indices.length / 3;
+      const a = new THREE.Vector3();
+      const b = new THREE.Vector3();
+      const c = new THREE.Vector3();
+      const faceNormal = new THREE.Vector3();
+      const vertexNormal = new THREE.Vector3();
+
+      for (let faceIndex = 0; faceIndex < faceCountNew; faceIndex++) {
+        const ia = indices[faceIndex * 3];
+        const ib = indices[faceIndex * 3 + 1];
+        const ic = indices[faceIndex * 3 + 2];
+
+        a.fromArray(positions, ia * 3);
+        b.fromArray(positions, ib * 3);
+        c.fromArray(positions, ic * 3);
+        faceNormal.crossVectors(b.clone().sub(a), c.clone().sub(a)).normalize();
+
+        const originalA = faceOriginals[faceIndex * 3];
+        const originalB = faceOriginals[faceIndex * 3 + 1];
+        const originalC = faceOriginals[faceIndex * 3 + 2];
+
+        const controlFaceIndex = faceIndexLookup[faceIndex];
+
+        const creaseA = Math.max(
+          state.creaseData.vertices.get(originalA) ?? 0,
+          state.creaseData.faces.get(controlFaceIndex) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalA, originalB)) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalC, originalA)) ?? 0
+        );
+        const creaseB = Math.max(
+          state.creaseData.vertices.get(originalB) ?? 0,
+          state.creaseData.faces.get(controlFaceIndex) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalA, originalB)) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalB, originalC)) ?? 0
+        );
+        const creaseC = Math.max(
+          state.creaseData.vertices.get(originalC) ?? 0,
+          state.creaseData.faces.get(controlFaceIndex) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalB, originalC)) ?? 0,
+          state.creaseData.edges.get(makeEdgeKey(originalC, originalA)) ?? 0
+        );
+
+        if (creaseA > 0) {
+          vertexNormal.fromBufferAttribute(normals, ia).lerp(faceNormal, creaseA).normalize();
+          normals.setXYZ(ia, vertexNormal.x, vertexNormal.y, vertexNormal.z);
+        }
+        if (creaseB > 0) {
+          vertexNormal.fromBufferAttribute(normals, ib).lerp(faceNormal, creaseB).normalize();
+          normals.setXYZ(ib, vertexNormal.x, vertexNormal.y, vertexNormal.z);
+        }
+        if (creaseC > 0) {
+          vertexNormal.fromBufferAttribute(normals, ic).lerp(faceNormal, creaseC).normalize();
+          normals.setXYZ(ic, vertexNormal.x, vertexNormal.y, vertexNormal.z);
+        }
+      }
+      normals.needsUpdate = true;
+      return newGeometry;
+    }
+
+    function updatePreviewGeometry() {
+      const baseGeometry = controlMesh.geometry.clone();
+      baseGeometry.computeVertexNormals();
+      const creasedGeometry = applyCreasesToGeometry(baseGeometry);
+      const modifier = new SubdivisionModifier(Math.max(0, state.subdivisionLevel));
+      const subdivided = modifier.modify(creasedGeometry);
+      subdivided.computeVertexNormals();
+      subdivided.computeBoundingSphere();
+      subdivided.computeBoundingBox();
+      if (previewMesh.geometry) {
+        previewMesh.geometry.dispose();
+      }
+      previewMesh.geometry = subdivided;
+      previewMesh.visible = true;
+      previewMesh.position.copy(controlMesh.position);
+      previewMesh.quaternion.copy(controlMesh.quaternion);
+      previewMesh.scale.copy(controlMesh.scale);
+      updateStats();
+      requestRender();
+      baseGeometry.dispose();
+      creasedGeometry.dispose();
+    }
+
+    function onPointerDown(event) {
+      if (transformControls.dragging) return;
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObject(controlMesh, true);
+      if (intersects.length === 0) {
+        clearSelection();
+        return;
+      }
+      const hit = intersects[0];
+      const geometry = controlMesh.geometry;
+      const indexAttr = geometry.index;
+      if (!indexAttr) return;
+      const faceIndex = hit.faceIndex;
+      const ia = indexAttr.getX(faceIndex * 3);
+      const ib = indexAttr.getX(faceIndex * 3 + 1);
+      const ic = indexAttr.getX(faceIndex * 3 + 2);
+
+      if (state.selectionMode === 'vertex') {
+        const posAttr = geometry.attributes.position;
+        const hitPoint = hit.point;
+        const vertices = [
+          { index: ia, position: new THREE.Vector3(posAttr.getX(ia), posAttr.getY(ia), posAttr.getZ(ia)) },
+          { index: ib, position: new THREE.Vector3(posAttr.getX(ib), posAttr.getY(ib), posAttr.getZ(ib)) },
+          { index: ic, position: new THREE.Vector3(posAttr.getX(ic), posAttr.getY(ic), posAttr.getZ(ic)) }
+        ];
+        vertices.forEach((v) => controlMesh.localToWorld(v.position));
+        let nearest = vertices[0];
+        let minDist = hitPoint.distanceTo(vertices[0].position);
+        for (let i = 1; i < vertices.length; i++) {
+          const dist = hitPoint.distanceTo(vertices[i].position);
+          if (dist < minDist) {
+            minDist = dist;
+            nearest = vertices[i];
+          }
+        }
+        state.selected = { type: 'vertex', index: nearest.index };
+      } else if (state.selectionMode === 'edge') {
+        const posAttr = geometry.attributes.position;
+        const va = new THREE.Vector3(posAttr.getX(ia), posAttr.getY(ia), posAttr.getZ(ia));
+        const vb = new THREE.Vector3(posAttr.getX(ib), posAttr.getY(ib), posAttr.getZ(ib));
+        const vc = new THREE.Vector3(posAttr.getX(ic), posAttr.getY(ic), posAttr.getZ(ic));
+        controlMesh.localToWorld(va);
+        controlMesh.localToWorld(vb);
+        controlMesh.localToWorld(vc);
+        const edges = [
+          { a: ia, b: ib, distance: pointToSegmentDistance(hit.point, va, vb) },
+          { a: ib, b: ic, distance: pointToSegmentDistance(hit.point, vb, vc) },
+          { a: ic, b: ia, distance: pointToSegmentDistance(hit.point, vc, va) }
+        ];
+        edges.sort((a, b) => a.distance - b.distance);
+        state.selected = { type: 'edge', a: edges[0].a, b: edges[0].b };
+      } else {
+        state.selected = { type: 'face', faceIndex };
+      }
+      updateSelectionVisual();
+      updateSelectionStatus();
+      positionSelectionHelper();
+      updateCreaseUI();
+    }
+
+    function pointToSegmentDistance(point, a, b) {
+      const ab = b.clone().sub(a);
+      const t = Math.max(0, Math.min(1, point.clone().sub(a).dot(ab) / ab.lengthSq()));
+      const projection = a.clone().add(ab.multiplyScalar(t));
+      return projection.distanceTo(point);
+    }
+
+    function onResize() {
+      const width = canvas.clientWidth || canvas.parentElement.clientWidth;
+      const height = canvas.clientHeight || canvas.parentElement.clientHeight;
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+      requestRender();
+    }
+
+    window.addEventListener('resize', onResize);
+    renderer.domElement.addEventListener('pointerdown', onPointerDown);
+
+    document.querySelectorAll('[data-primitive]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const type = button.dataset.primitive;
+        let geometry;
+        switch (type) {
+          case 'box':
+            geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2);
+            break;
+          case 'sphere':
+            geometry = new THREE.SphereGeometry(0.75, 24, 16);
+            break;
+          case 'cylinder':
+            geometry = new THREE.CylinderGeometry(0.6, 0.6, 1.4, 24, 1, false);
+            break;
+          case 'plane':
+            geometry = new THREE.PlaneGeometry(2, 2, 4, 4);
+            break;
+          default:
+            geometry = new THREE.BoxGeometry(1, 1, 1);
+        }
+        setControlGeometry(geometry);
+      });
+    });
+
+    document.getElementById('reset-scene').addEventListener('click', () => {
+      setControlGeometry(new THREE.BoxGeometry(1, 1, 1, 2, 2, 2));
+    });
+
+    document.getElementById('subdivision-level').addEventListener('input', (event) => {
+      const level = Number(event.target.value);
+      state.subdivisionLevel = level;
+      document.getElementById('subdivision-value').textContent = level.toString();
+      updatePreviewGeometry();
+    });
+
+    document.querySelectorAll('#selection-mode input[type="radio"]').forEach((input) => {
+      input.addEventListener('change', () => {
+        if (input.checked) {
+          state.selectionMode = input.value;
+          clearSelection();
+        }
+      });
+    });
+
+    document.getElementById('crease-weight').addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      document.getElementById('crease-value').textContent = value.toFixed(2);
+      if (state.selected) {
+        setCreaseValue(state.selected, value);
+      }
+    });
+
+    document.getElementById('environment-intensity').addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      previewMesh.material.envMapIntensity = value;
+      document.getElementById('environment-value').textContent = value.toFixed(2);
+      requestRender();
+    });
+
+    document.getElementById('exposure').addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      renderer.toneMappingExposure = value;
+      document.getElementById('exposure-value').textContent = value.toFixed(2);
+      requestRender();
+    });
+
+    document.getElementById('metalness').addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      previewMesh.material.metalness = value;
+      document.getElementById('metalness-value').textContent = value.toFixed(2);
+      requestRender();
+    });
+
+    document.getElementById('roughness').addEventListener('input', (event) => {
+      const value = Number(event.target.value);
+      previewMesh.material.roughness = value;
+      document.getElementById('roughness-value').textContent = value.toFixed(2);
+      requestRender();
+    });
+
+    document.getElementById('import-gltf').addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const arrayBuffer = await file.arrayBuffer();
+      loader.parse(arrayBuffer, '', (gltf) => {
+        let mesh = null;
+        gltf.scene.traverse((child) => {
+          if (child.isMesh && !mesh) {
+            mesh = child;
+          }
+        });
+        if (!mesh) {
+          console.warn('No mesh found in glTF');
+          return;
+        }
+        const geometry = mesh.geometry.clone();
+        setControlGeometry(geometry);
+      }, (error) => {
+        console.error('Failed to load glTF', error);
+      });
+    });
+
+    document.getElementById('export-gltf').addEventListener('click', () => {
+      exporter.parse(
+        previewMesh,
+        (result) => {
+          const blob = new Blob([JSON.stringify(result)], { type: 'model/gltf+json' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'nebula-subd-export.gltf';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        },
+        { binary: false, embedImages: true, onlyVisible: false, includeCustomExtensions: true, trs: false }
+      );
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.target instanceof HTMLInputElement) return;
+      switch (event.key.toLowerCase()) {
+        case 'w':
+          transformControls.setMode('translate');
+          break;
+        case 'e':
+          transformControls.setMode('rotate');
+          break;
+        case 'r':
+          transformControls.setMode('scale');
+          break;
+        case 'q':
+          transformControls.setSpace(transformControls.space === 'world' ? 'local' : 'world');
+          break;
+        case 'escape':
+          clearSelection();
+          break;
+      }
+      if (event.key === 'Shift') {
+        transformControls.setTranslationSnap(0.1);
+        transformControls.setRotationSnap(THREE.MathUtils.degToRad(15));
+        transformControls.setScaleSnap(0.1);
+      }
+      requestRender();
+    });
+
+    document.addEventListener('keyup', (event) => {
+      if (event.key === 'Shift') {
+        transformControls.setTranslationSnap(null);
+        transformControls.setRotationSnap(null);
+        transformControls.setScaleSnap(null);
+      }
+      requestRender();
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (orbit.update()) {
+        state.needsRender = true;
+      }
+      if (state.needsRender) {
+        renderer.render(scene, camera);
+        state.needsRender = false;
+      }
+      updatePerformanceStats();
+    }
+
+    function initialSetup() {
+      setControlGeometry(new THREE.BoxGeometry(1.4, 1.4, 1.4, 2, 2, 2));
+      transformControls.setMode('translate');
+      transformControls.setSpace('world');
+      requestRender();
+    }
+
+    function disposeGeometry(geometry) {
+      if (geometry) {
+        geometry.dispose();
+      }
+    }
+
+    function disposeMaterial(material) {
+      if (material) {
+        material.dispose();
+      }
+    }
+
+    initialSetup();
+    onResize();
+    animate();
+
+    window.addEventListener('beforeunload', () => {
+      disposeGeometry(controlMesh.geometry);
+      disposeGeometry(previewMesh.geometry);
+      disposeMaterial(controlMaterial);
+      disposeMaterial(previewMaterial);
+    });
+  </script>
+</body>
+</html>
