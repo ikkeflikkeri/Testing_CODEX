@@ -1,0 +1,1744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 11</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            background: #000;
+        }
+
+        /* Desktop */
+        .desktop {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: linear-gradient(135deg, #0078D4 0%, #0B3D91 100%);
+            overflow: hidden;
+        }
+
+        /* Windows 11 Wallpaper SVG Background */
+        .wallpaper {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Desktop Icons */
+        .desktop-icons {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .desktop-icon {
+            width: 80px;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            padding: 8px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .desktop-icon:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .desktop-icon.selected {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .desktop-icon svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 4px;
+        }
+
+        .desktop-icon span {
+            display: block;
+            color: white;
+            font-size: 12px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+            word-wrap: break-word;
+        }
+
+        /* Taskbar */
+        .taskbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 48px;
+            background: rgba(243, 243, 243, 0.5);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .taskbar-center {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 0 8px;
+        }
+
+        .taskbar-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .taskbar-icon:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .taskbar-icon.active::after {
+            content: '';
+            position: absolute;
+            bottom: 2px;
+            width: 16px;
+            height: 3px;
+            background: #0067C0;
+            border-radius: 2px;
+        }
+
+        .taskbar-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .start-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* System Tray */
+        .system-tray {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
+            z-index: 1001;
+        }
+
+        .tray-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .tray-icon:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .tray-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .clock {
+            padding: 4px 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            text-align: right;
+        }
+
+        .clock:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .clock-time {
+            font-size: 12px;
+            color: #000;
+            font-weight: 400;
+            line-height: 14px;
+        }
+
+        .clock-date {
+            font-size: 11px;
+            color: #000;
+            line-height: 13px;
+        }
+
+        /* Start Menu */
+        .start-menu {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.95);
+            width: 600px;
+            height: 660px;
+            background: rgba(242, 242, 242, 0.9);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .start-menu.show {
+            display: flex;
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .start-search {
+            padding: 32px 32px 24px;
+        }
+
+        .search-box {
+            width: 100%;
+            height: 40px;
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding: 0 12px;
+            gap: 8px;
+        }
+
+        .search-box svg {
+            width: 16px;
+            height: 16px;
+            opacity: 0.6;
+        }
+
+        .search-box input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: transparent;
+        }
+
+        .pinned-section {
+            flex: 1;
+            padding: 0 32px;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .all-apps-btn {
+            background: none;
+            border: none;
+            color: #0067C0;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .all-apps-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .pinned-apps {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .pinned-app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .pinned-app:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .pinned-app svg {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 8px;
+        }
+
+        .pinned-app span {
+            font-size: 11px;
+            color: #000;
+            text-align: center;
+        }
+
+        .recommended-section {
+            padding: 16px 32px 24px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .recommended-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .recommended-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .recommended-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .recommended-item svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .recommended-info {
+            flex: 1;
+        }
+
+        .recommended-name {
+            font-size: 12px;
+            color: #000;
+            margin-bottom: 2px;
+        }
+
+        .recommended-time {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .start-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 32px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .user-profile:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #0078D4, #0B3D91);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-size: 13px;
+            color: #000;
+        }
+
+        .power-btn {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .power-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .power-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Window */
+        .window {
+            position: absolute;
+            width: 800px;
+            height: 600px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 100;
+            overflow: hidden;
+        }
+
+        .window.show {
+            display: flex;
+        }
+
+        .window.maximized {
+            width: 100vw !important;
+            height: calc(100vh - 48px) !important;
+            top: 0 !important;
+            left: 0 !important;
+            border-radius: 0;
+        }
+
+        .window-titlebar {
+            height: 40px;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px;
+            cursor: move;
+            user-select: none;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .window-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .window-title svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .window-controls {
+            display: flex;
+        }
+
+        .window-control-btn {
+            width: 46px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .window-control-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .window-control-btn.close:hover {
+            background: #c42b1c;
+        }
+
+        .window-control-btn.close:hover svg {
+            fill: white;
+        }
+
+        .window-control-btn svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .window-content {
+            flex: 1;
+            overflow: auto;
+            padding: 24px;
+            background: white;
+        }
+
+        /* Context Menu */
+        .context-menu {
+            position: fixed;
+            background: rgba(249, 249, 249, 0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            display: none;
+            z-index: 10000;
+            min-width: 320px;
+        }
+
+        .context-menu.show {
+            display: block;
+        }
+
+        .context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .context-menu-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .context-menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .context-menu-item svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .context-menu-divider {
+            height: 1px;
+            background: rgba(0, 0, 0, 0.1);
+            margin: 4px 0;
+        }
+
+        /* Quick Settings Panel */
+        .quick-settings {
+            position: fixed;
+            bottom: 60px;
+            right: 12px;
+            width: 360px;
+            background: rgba(242, 242, 242, 0.95);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .quick-settings.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .quick-toggles {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding: 16px;
+        }
+
+        .quick-toggle {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .quick-toggle:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+
+        .quick-toggle.active {
+            background: #0067C0;
+            border-color: #0067C0;
+        }
+
+        .quick-toggle.active svg {
+            fill: white;
+        }
+
+        .quick-toggle.active span {
+            color: white;
+        }
+
+        .quick-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .quick-toggle span {
+            font-size: 11px;
+            color: #000;
+        }
+
+        .volume-brightness {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .slider-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .slider-control svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .slider {
+            flex: 1;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 2px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .slider-fill {
+            height: 100%;
+            background: #0067C0;
+            border-radius: 2px;
+            width: 70%;
+            position: relative;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: white;
+            border: 2px solid #0067C0;
+            border-radius: 50%;
+        }
+
+        /* Notification Center */
+        .notification-center {
+            position: fixed;
+            bottom: 60px;
+            right: 12px;
+            width: 360px;
+            max-height: 600px;
+            background: rgba(242, 242, 242, 0.95);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .notification-center.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .notification-header {
+            padding: 16px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .notification-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .notification-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .notification-item {
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+
+        .notification-app {
+            font-size: 11px;
+            font-weight: 600;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .notification-text {
+            font-size: 12px;
+            color: #333;
+        }
+
+        /* Calendar Panel */
+        .calendar-panel {
+            position: fixed;
+            bottom: 60px;
+            right: 12px;
+            width: 360px;
+            background: rgba(242, 242, 242, 0.95);
+            backdrop-filter: blur(50px);
+            -webkit-backdrop-filter: blur(50px);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .calendar-panel.show {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .calendar-header {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .calendar-date {
+            font-size: 48px;
+            font-weight: 300;
+            color: #000;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .calendar-month {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .calendar-grid {
+            padding: 16px;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .calendar-day-header {
+            font-size: 11px;
+            color: #666;
+            padding: 8px 0;
+            font-weight: 600;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #000;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calendar-day:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .calendar-day.today {
+            background: #0067C0;
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.other-month {
+            color: #999;
+        }
+
+        /* Loading animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Desktop -->
+    <div class="desktop">
+        <!-- Windows 11 Wallpaper -->
+        <svg class="wallpaper" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#0078D4;stop-opacity:1" />
+                    <stop offset="100%" style="stop-color:#0B3D91;stop-opacity:1" />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+                <linearGradient id="flower1" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4CC2FF;stop-opacity:0.8" />
+                    <stop offset="100%" style="stop-color:#0078D4;stop-opacity:0.4" />
+                </linearGradient>
+                <linearGradient id="flower2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00D4FF;stop-opacity:0.6" />
+                    <stop offset="100%" style="stop-color:#0094D4;stop-opacity:0.3" />
+                </linearGradient>
+            </defs>
+
+            <rect width="1920" height="1080" fill="url(#bg1)"/>
+
+            <!-- Abstract flower/bloom shape in center -->
+            <g transform="translate(960, 540)" filter="url(#glow)">
+                <!-- Main petals -->
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower1)" opacity="0.5" transform="rotate(0)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower1)" opacity="0.5" transform="rotate(45)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower2)" opacity="0.5" transform="rotate(90)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower2)" opacity="0.5" transform="rotate(135)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower1)" opacity="0.4" transform="rotate(22.5)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower1)" opacity="0.4" transform="rotate(67.5)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower2)" opacity="0.4" transform="rotate(112.5)"/>
+                <ellipse cx="0" cy="-200" rx="180" ry="280" fill="url(#flower2)" opacity="0.4" transform="rotate(157.5)"/>
+
+                <!-- Center glow -->
+                <circle cx="0" cy="0" r="150" fill="#4CC2FF" opacity="0.3"/>
+                <circle cx="0" cy="0" r="100" fill="#FFFFFF" opacity="0.2"/>
+            </g>
+
+            <!-- Additional glow effects -->
+            <ellipse cx="1500" cy="300" rx="300" ry="400" fill="#00D4FF" opacity="0.1" filter="url(#glow)"/>
+            <ellipse cx="400" cy="800" rx="350" ry="300" fill="#4CC2FF" opacity="0.08" filter="url(#glow)"/>
+        </svg>
+
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <rect x="8" y="6" width="32" height="36" rx="2" fill="#0078D4"/>
+                    <path d="M12 10h24v8H12z" fill="#50E6FF"/>
+                    <rect x="12" y="20" width="10" height="8" fill="#FFFFFF" opacity="0.8"/>
+                    <rect x="26" y="20" width="10" height="8" fill="#FFFFFF" opacity="0.8"/>
+                    <rect x="12" y="30" width="24" height="2" fill="#FFFFFF" opacity="0.6"/>
+                    <rect x="12" y="34" width="18" height="2" fill="#FFFFFF" opacity="0.6"/>
+                </svg>
+                <span>This PC</span>
+            </div>
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <path d="M40 12L24 4L8 12v24l16 8l16-8V12z" fill="#FFB900"/>
+                    <path d="M24 4v20M8 12l16 8M40 12L24 20" stroke="#FFFFFF" stroke-width="2" opacity="0.5"/>
+                    <path d="M8 24l16 8l16-8" stroke="#FFFFFF" stroke-width="2" opacity="0.3"/>
+                </svg>
+                <span>Recycle Bin</span>
+            </div>
+            <div class="desktop-icon">
+                <svg viewBox="0 0 48 48" fill="none">
+                    <rect x="10" y="8" width="28" height="32" rx="2" fill="#F3F3F3"/>
+                    <path d="M16 16h16M16 22h16M16 28h12" stroke="#0078D4" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M30 34l8 4V10l-8 4" fill="#0078D4"/>
+                </svg>
+                <span>Documents</span>
+            </div>
+        </div>
+
+        <!-- Windows -->
+        <div class="window" id="explorer-window" style="top: 100px; left: 200px;">
+            <div class="window-titlebar">
+                <div class="window-title">
+                    <svg viewBox="0 0 16 16" fill="#0078D4">
+                        <path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/>
+                    </svg>
+                    <span>File Explorer</span>
+                </div>
+                <div class="window-controls">
+                    <div class="window-control-btn minimize">
+                        <svg viewBox="0 0 12 12" fill="currentColor">
+                            <rect x="0" y="5" width="12" height="2"/>
+                        </svg>
+                    </div>
+                    <div class="window-control-btn maximize">
+                        <svg viewBox="0 0 12 12" fill="currentColor">
+                            <rect x="1" y="1" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <div class="window-control-btn close">
+                        <svg viewBox="0 0 12 12" fill="currentColor">
+                            <path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="window-content">
+                <h2>Quick access</h2>
+                <p style="margin-top: 16px; color: #666;">Your frequently used folders and files will appear here.</p>
+                <div style="margin-top: 24px; display: flex; gap: 16px; flex-wrap: wrap;">
+                    <div style="width: 120px; text-align: center; padding: 16px; border-radius: 8px; background: #f5f5f5; cursor: pointer;">
+                        <svg viewBox="0 0 48 48" fill="none" style="width: 48px; height: 48px; margin: 0 auto 8px;">
+                            <path d="M8 10h12l4 4h16v24H8V10z" fill="#FFB900"/>
+                            <path d="M8 14h32v24H8z" fill="#FFC83D"/>
+                        </svg>
+                        <div style="font-size: 13px;">Desktop</div>
+                    </div>
+                    <div style="width: 120px; text-align: center; padding: 16px; border-radius: 8px; background: #f5f5f5; cursor: pointer;">
+                        <svg viewBox="0 0 48 48" fill="none" style="width: 48px; height: 48px; margin: 0 auto 8px;">
+                            <path d="M8 10h12l4 4h16v24H8V10z" fill="#0078D4"/>
+                            <path d="M8 14h32v24H8z" fill="#50E6FF"/>
+                        </svg>
+                        <div style="font-size: 13px;">Documents</div>
+                    </div>
+                    <div style="width: 120px; text-align: center; padding: 16px; border-radius: 8px; background: #f5f5f5; cursor: pointer;">
+                        <svg viewBox="0 0 48 48" fill="none" style="width: 48px; height: 48px; margin: 0 auto 8px;">
+                            <path d="M8 10h12l4 4h16v24H8V10z" fill="#00B294"/>
+                            <path d="M8 14h32v24H8z" fill="#00D4AA"/>
+                        </svg>
+                        <div style="font-size: 13px;">Downloads</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Context Menu -->
+        <div class="context-menu" id="context-menu">
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>New</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="3" y="3" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>View</span>
+            </div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M3 5h10M3 8h10M3 11h7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Sort by</span>
+            </div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>Refresh</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="4" y="4" width="8" height="8" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>Paste</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <span>Personalize</span>
+            </div>
+            <div class="context-menu-item">
+                <svg viewBox="0 0 16 16" fill="currentColor">
+                    <rect x="3" y="3" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M8 6v4M6 8h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <span>Display settings</span>
+            </div>
+        </div>
+
+        <!-- Start Menu -->
+        <div class="start-menu" id="start-menu">
+            <div class="start-search">
+                <div class="search-box">
+                    <svg viewBox="0 0 16 16" fill="currentColor">
+                        <circle cx="6.5" cy="6.5" r="5" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M10 10l4.5 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                    <input type="text" placeholder="Search for apps, settings, and documents">
+                </div>
+            </div>
+
+            <div class="pinned-section">
+                <div class="section-header">
+                    <div class="section-title">Pinned</div>
+                    <button class="all-apps-btn">
+                        All apps
+                        <svg viewBox="0 0 12 12" fill="currentColor" style="width: 12px; height: 12px;">
+                            <path d="M3 5l3 3l3-3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="pinned-apps">
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="20" fill="#0078D4"/>
+                            <path d="M16 24c0-4 4-8 8-8s8 4 8 8" stroke="#FFFFFF" stroke-width="3" fill="none"/>
+                            <circle cx="24" cy="30" r="3" fill="#FFFFFF"/>
+                        </svg>
+                        <span>Edge</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="8" y="6" width="32" height="36" rx="2" fill="#0078D4"/>
+                            <rect x="12" y="10" width="24" height="6" fill="#50E6FF"/>
+                            <rect x="12" y="18" width="10" height="8" fill="#FFFFFF" opacity="0.8"/>
+                            <rect x="26" y="18" width="10" height="8" fill="#FFFFFF" opacity="0.8"/>
+                        </svg>
+                        <span>File Explorer</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="6" y="10" width="36" height="28" rx="2" fill="#0078D4"/>
+                            <path d="M6 18h36" stroke="#50E6FF" stroke-width="2"/>
+                            <circle cx="12" cy="14" r="1.5" fill="#FFFFFF"/>
+                            <circle cx="17" cy="14" r="1.5" fill="#FFFFFF"/>
+                            <circle cx="22" cy="14" r="1.5" fill="#FFFFFF"/>
+                        </svg>
+                        <span>Microsoft Store</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="8" width="28" height="32" rx="2" fill="#2B579A"/>
+                            <path d="M16 20h16M16 26h16" stroke="#FFFFFF" stroke-width="2"/>
+                            <rect x="16" y="14" width="4" height="4" fill="#FFFFFF"/>
+                        </svg>
+                        <span>Word</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="8" width="28" height="32" rx="2" fill="#217346"/>
+                            <rect x="14" y="20" width="8" height="12" fill="#FFFFFF" opacity="0.9"/>
+                            <rect x="24" y="16" width="8" height="16" fill="#FFFFFF" opacity="0.9"/>
+                        </svg>
+                        <span>Excel</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="8" width="28" height="32" rx="2" fill="#B7472A"/>
+                            <rect x="16" y="16" width="16" height="12" fill="#FFFFFF" opacity="0.9"/>
+                            <rect x="16" y="20" width="16" height="1" fill="#B7472A"/>
+                            <rect x="16" y="24" width="16" height="1" fill="#B7472A"/>
+                        </svg>
+                        <span>PowerPoint</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="12" width="28" height="24" rx="2" fill="#0078D4"/>
+                            <path d="M10 20h28M24 12v24" stroke="#50E6FF" stroke-width="2"/>
+                        </svg>
+                        <span>Calendar</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="20" r="8" fill="#0078D4"/>
+                            <path d="M12 36c0-6 5-11 12-11s12 5 12 11" fill="#50E6FF"/>
+                        </svg>
+                        <span>Photos</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="8" y="12" width="32" height="24" rx="2" fill="#232323"/>
+                            <path d="M8 20h32" stroke="#0078D4" stroke-width="2"/>
+                            <path d="M14 26h6M14 30h4" stroke="#00D4AA" stroke-width="2"/>
+                        </svg>
+                        <span>Terminal</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <circle cx="24" cy="24" r="16" fill="#0078D4"/>
+                            <path d="M24 14v10l7 4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                        <span>Clock</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="10" y="10" width="28" height="28" rx="2" fill="#FFB900"/>
+                            <path d="M18 24l4 4l8-8" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                        </svg>
+                        <span>To Do</span>
+                    </div>
+                    <div class="pinned-app">
+                        <svg viewBox="0 0 48 48" fill="none">
+                            <rect x="8" y="14" width="32" height="20" rx="2" fill="#0078D4"/>
+                            <path d="M16 22l8 4l8-4" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" fill="none"/>
+                        </svg>
+                        <span>Mail</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recommended-section">
+                <div class="section-header" style="margin-bottom: 12px;">
+                    <div class="section-title">Recommended</div>
+                </div>
+                <div class="recommended-items">
+                    <div class="recommended-item">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <rect x="4" y="4" width="24" height="24" rx="2" fill="#0078D4"/>
+                            <path d="M10 12h12M10 16h12M10 20h8" stroke="#FFFFFF" stroke-width="1.5"/>
+                        </svg>
+                        <div class="recommended-info">
+                            <div class="recommended-name">Project Proposal.docx</div>
+                            <div class="recommended-time">2h ago</div>
+                        </div>
+                    </div>
+                    <div class="recommended-item">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <rect x="4" y="4" width="24" height="24" rx="2" fill="#217346"/>
+                            <rect x="8" y="14" width="6" height="10" fill="#FFFFFF" opacity="0.9"/>
+                            <rect x="16" y="10" width="6" height="14" fill="#FFFFFF" opacity="0.9"/>
+                        </svg>
+                        <div class="recommended-info">
+                            <div class="recommended-name">Budget 2024.xlsx</div>
+                            <div class="recommended-time">Yesterday</div>
+                        </div>
+                    </div>
+                    <div class="recommended-item">
+                        <svg viewBox="0 0 32 32" fill="none">
+                            <circle cx="16" cy="12" r="6" fill="#0078D4"/>
+                            <path d="M8 26c0-4 3-7 8-7s8 3 8 7" fill="#50E6FF"/>
+                        </svg>
+                        <div class="recommended-info">
+                            <div class="recommended-name">Vacation.jpg</div>
+                            <div class="recommended-time">Last week</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="start-footer">
+                <div class="user-profile">
+                    <div class="user-avatar">U</div>
+                    <div class="user-name">User</div>
+                </div>
+                <div class="power-btn">
+                    <svg viewBox="0 0 16 16" fill="currentColor">
+                        <circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M8 5v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Settings Panel -->
+        <div class="quick-settings" id="quick-settings">
+            <div class="quick-toggles">
+                <div class="quick-toggle active" data-toggle="wifi">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7 14c-.55 0-1 .45-1 1 0 .28.11.53.29.71l4 4c.19.18.44.29.71.29s.52-.11.71-.29l4-4c.18-.18.29-.43.29-.71 0-.55-.45-1-1-1H7zM2 10c-.55 0-1 .45-1 1 0 .28.11.53.29.71l9 9c.19.18.44.29.71.29s.52-.11.71-.29l9-9c.18-.18.29-.43.29-.71 0-.55-.45-1-1-1H2z"/>
+                    </svg>
+                    <span>WiFi</span>
+                </div>
+                <div class="quick-toggle" data-toggle="bluetooth">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17.71 7.71L12 2h-1v7.59L6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 11 14.41V22h1l5.71-5.71-4.3-4.29 4.3-4.29zM13 5.83l1.88 1.88L13 9.59V5.83zm1.88 10.46L13 18.17v-3.76l1.88 1.88z"/>
+                    </svg>
+                    <span>Bluetooth</span>
+                </div>
+                <div class="quick-toggle" data-toggle="airplane">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                    <span>Airplane</span>
+                </div>
+                <div class="quick-toggle" data-toggle="battery">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4zM11 20v-5.5H9L13 7v5.5h2L11 20z"/>
+                    </svg>
+                    <span>Battery</span>
+                </div>
+                <div class="quick-toggle" data-toggle="focus">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                        <circle cx="12" cy="12" r="5"/>
+                    </svg>
+                    <span>Focus</span>
+                </div>
+                <div class="quick-toggle" data-toggle="night">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+                    </svg>
+                    <span>Night light</span>
+                </div>
+            </div>
+
+            <div class="volume-brightness">
+                <div class="slider-control">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+                    </svg>
+                    <div class="slider">
+                        <div class="slider-fill" style="width: 70%;">
+                            <div class="slider-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slider-control">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                        <circle cx="12" cy="12" r="5"/>
+                    </svg>
+                    <div class="slider">
+                        <div class="slider-fill" style="width: 60%;">
+                            <div class="slider-thumb"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notification Center -->
+        <div class="notification-center" id="notification-center">
+            <div class="notification-header">
+                <div class="notification-title">Notifications</div>
+            </div>
+            <div class="notification-list">
+                <div class="notification-item">
+                    <div class="notification-app">Microsoft Edge</div>
+                    <div class="notification-text">Your browser is up to date</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-app">Windows Security</div>
+                    <div class="notification-text">No action needed. Windows Defender is protecting your device.</div>
+                </div>
+                <div class="notification-item">
+                    <div class="notification-app">Microsoft Store</div>
+                    <div class="notification-text">App updates available</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Panel -->
+        <div class="calendar-panel" id="calendar-panel">
+            <div class="calendar-header">
+                <div class="calendar-date" id="calendar-date">11</div>
+                <div class="calendar-month" id="calendar-month">November 2025</div>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-days">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                </div>
+                <div id="calendar-days-grid" class="calendar-days">
+                    <!-- Days will be generated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+        <div class="taskbar-center">
+            <div class="taskbar-icon start-icon" id="start-btn">
+                <svg viewBox="0 0 24 24" fill="#0078D4">
+                    <rect x="3" y="3" width="8" height="8" rx="1"/>
+                    <rect x="13" y="3" width="8" height="8" rx="1"/>
+                    <rect x="3" y="13" width="8" height="8" rx="1"/>
+                    <rect x="13" y="13" width="8" height="8" rx="1"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon" id="search-btn">
+                <svg viewBox="0 0 24 24" fill="#000">
+                    <circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M15 15l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon">
+                <svg viewBox="0 0 24 24" fill="#000">
+                    <rect x="3" y="5" width="7" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="14" y="5" width="7" height="14" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon">
+                <svg viewBox="0 0 24 24" fill="#000">
+                    <rect x="3" y="3" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="13" y="3" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="3" y="13" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <rect x="13" y="13" width="8" height="8" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon active" id="explorer-btn">
+                <svg viewBox="0 0 24 24" fill="#0078D4">
+                    <path d="M4 6h7l2 2h7v11H4V6z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M4 8h16v11H4z"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon">
+                <svg viewBox="0 0 24 24" fill="#0078D4">
+                    <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 6c3 0 5.5 2.5 5.5 5.5" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <circle cx="12" cy="15" r="2"/>
+                </svg>
+            </div>
+            <div class="taskbar-icon">
+                <svg viewBox="0 0 24 24" fill="#217346">
+                    <rect x="4" y="4" width="16" height="16" rx="2"/>
+                    <rect x="7" y="10" width="4" height="8" fill="#FFFFFF" opacity="0.9"/>
+                    <rect x="13" y="7" width="4" height="11" fill="#FFFFFF" opacity="0.9"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Tray -->
+    <div class="system-tray">
+        <div class="tray-icon">
+            <svg viewBox="0 0 24 24" fill="#000">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+            </svg>
+        </div>
+        <div class="tray-icon" id="wifi-btn">
+            <svg viewBox="0 0 24 24" fill="#000">
+                <path d="M12 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-5-3c-.55 0-1 .45-1 1 0 .28.11.53.29.71l4 4c.19.18.44.29.71.29s.52-.11.71-.29l4-4c.18-.18.29-.43.29-.71 0-.55-.45-1-1-1H7z"/>
+            </svg>
+        </div>
+        <div class="tray-icon" id="sound-btn">
+            <svg viewBox="0 0 24 24" fill="#000">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/>
+            </svg>
+        </div>
+        <div class="tray-icon" id="battery-btn">
+            <svg viewBox="0 0 24 24" fill="#000">
+                <path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/>
+            </svg>
+        </div>
+        <div class="tray-icon" id="notification-btn">
+            <svg viewBox="0 0 24 24" fill="#000">
+                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/>
+            </svg>
+        </div>
+        <div class="clock" id="clock-btn">
+            <div class="clock-time" id="clock-time">12:00 PM</div>
+            <div class="clock-date" id="clock-date">11/11/2025</div>
+        </div>
+    </div>
+
+    <script>
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+
+            document.getElementById('clock-time').textContent = `${displayHours}:${minutes} ${ampm}`;
+            document.getElementById('clock-date').textContent = `${now.getMonth() + 1}/${now.getDate()}/${now.getFullYear()}`;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // Calendar
+        function generateCalendar() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth();
+            const today = now.getDate();
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            const grid = document.getElementById('calendar-days-grid');
+            grid.innerHTML = '';
+
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day other-month';
+                day.textContent = daysInPrevMonth - i;
+                grid.appendChild(day);
+            }
+
+            // Current month days
+            for (let i = 1; i <= daysInMonth; i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day';
+                if (i === today) day.classList.add('today');
+                day.textContent = i;
+                grid.appendChild(day);
+            }
+
+            // Next month days
+            const remainingDays = 42 - (firstDay + daysInMonth);
+            for (let i = 1; i <= remainingDays; i++) {
+                const day = document.createElement('div');
+                day.className = 'calendar-day other-month';
+                day.textContent = i;
+                grid.appendChild(day);
+            }
+
+            document.getElementById('calendar-date').textContent = today;
+            const months = ['January', 'February', 'March', 'April', 'May', 'June',
+                          'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendar-month').textContent = `${months[month]} ${year}`;
+        }
+
+        generateCalendar();
+
+        // Start Menu Toggle
+        const startBtn = document.getElementById('start-btn');
+        const startMenu = document.getElementById('start-menu');
+
+        startBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            startMenu.classList.toggle('show');
+            closeAllPanels(['start-menu']);
+        });
+
+        // Quick Settings Toggle
+        const quickSettingsBtn = document.getElementById('wifi-btn').parentElement;
+        const quickSettings = document.getElementById('quick-settings');
+
+        document.getElementById('wifi-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            quickSettings.classList.toggle('show');
+            closeAllPanels(['quick-settings']);
+        });
+
+        document.getElementById('sound-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            quickSettings.classList.toggle('show');
+            closeAllPanels(['quick-settings']);
+        });
+
+        document.getElementById('battery-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            quickSettings.classList.toggle('show');
+            closeAllPanels(['quick-settings']);
+        });
+
+        // Notification Center Toggle
+        const notificationBtn = document.getElementById('notification-btn');
+        const notificationCenter = document.getElementById('notification-center');
+
+        notificationBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            notificationCenter.classList.toggle('show');
+            closeAllPanels(['notification-center']);
+        });
+
+        // Calendar Panel Toggle
+        const clockBtn = document.getElementById('clock-btn');
+        const calendarPanel = document.getElementById('calendar-panel');
+
+        clockBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            calendarPanel.classList.toggle('show');
+            closeAllPanels(['calendar-panel']);
+        });
+
+        // Quick Toggle Buttons
+        document.querySelectorAll('.quick-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                toggle.classList.toggle('active');
+            });
+        });
+
+        // Helper function to close all panels except specified ones
+        function closeAllPanels(except = []) {
+            const panels = ['start-menu', 'quick-settings', 'notification-center', 'calendar-panel', 'context-menu'];
+            panels.forEach(panelId => {
+                if (!except.includes(panelId)) {
+                    document.getElementById(panelId).classList.remove('show');
+                }
+            });
+        }
+
+        // Close menus when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.start-menu') && !e.target.closest('#start-btn')) {
+                startMenu.classList.remove('show');
+            }
+            if (!e.target.closest('.quick-settings') && !e.target.closest('.system-tray')) {
+                quickSettings.classList.remove('show');
+            }
+            if (!e.target.closest('.notification-center') && !e.target.closest('#notification-btn')) {
+                notificationCenter.classList.remove('show');
+            }
+            if (!e.target.closest('.calendar-panel') && !e.target.closest('#clock-btn')) {
+                calendarPanel.classList.remove('show');
+            }
+            if (!e.target.closest('.context-menu')) {
+                document.getElementById('context-menu').classList.remove('show');
+            }
+        });
+
+        // Context Menu
+        const contextMenu = document.getElementById('context-menu');
+
+        document.querySelector('.desktop').addEventListener('contextmenu', (e) => {
+            if (e.target.classList.contains('desktop') || e.target.closest('.wallpaper')) {
+                e.preventDefault();
+                contextMenu.style.left = e.clientX + 'px';
+                contextMenu.style.top = e.clientY + 'px';
+                contextMenu.classList.add('show');
+            }
+        });
+
+        // Desktop Icons
+        let selectedIcon = null;
+
+        document.querySelectorAll('.desktop-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (selectedIcon) {
+                    selectedIcon.classList.remove('selected');
+                }
+                icon.classList.add('selected');
+                selectedIcon = icon;
+            });
+
+            icon.addEventListener('dblclick', () => {
+                if (icon.querySelector('span').textContent === 'This PC' ||
+                    icon.querySelector('span').textContent === 'Documents' ||
+                    icon.querySelector('span').textContent === 'Recycle Bin') {
+                    openWindow('explorer-window');
+                }
+            });
+        });
+
+        // Deselect icon when clicking desktop
+        document.querySelector('.desktop').addEventListener('click', () => {
+            if (selectedIcon) {
+                selectedIcon.classList.remove('selected');
+                selectedIcon = null;
+            }
+        });
+
+        // Windows
+        const explorerBtn = document.getElementById('explorer-btn');
+        const explorerWindow = document.getElementById('explorer-window');
+
+        explorerBtn.addEventListener('click', () => {
+            openWindow('explorer-window');
+        });
+
+        // Pinned apps in Start Menu
+        document.querySelectorAll('.pinned-app').forEach(app => {
+            app.addEventListener('click', () => {
+                const appName = app.querySelector('span').textContent;
+                if (appName === 'File Explorer') {
+                    openWindow('explorer-window');
+                    startMenu.classList.remove('show');
+                }
+            });
+        });
+
+        function openWindow(windowId) {
+            const window = document.getElementById(windowId);
+            window.classList.add('show');
+            bringToFront(window);
+        }
+
+        // Window Controls
+        document.querySelectorAll('.window').forEach(window => {
+            const titlebar = window.querySelector('.window-titlebar');
+            const minimizeBtn = window.querySelector('.minimize');
+            const maximizeBtn = window.querySelector('.maximize');
+            const closeBtn = window.querySelector('.close');
+
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+
+            titlebar.addEventListener('mousedown', (e) => {
+                if (e.target === titlebar || e.target.closest('.window-title')) {
+                    isDragging = true;
+                    initialX = e.clientX - window.offsetLeft;
+                    initialY = e.clientY - window.offsetTop;
+                    bringToFront(window);
+                }
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging && !window.classList.contains('maximized')) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+
+                    window.style.left = currentX + 'px';
+                    window.style.top = currentY + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            titlebar.addEventListener('dblclick', () => {
+                window.classList.toggle('maximized');
+            });
+
+            minimizeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.classList.remove('show');
+            });
+
+            maximizeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.classList.toggle('maximized');
+            });
+
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                window.classList.remove('show');
+            });
+        });
+
+        let zIndexCounter = 100;
+
+        function bringToFront(element) {
+            element.style.zIndex = ++zIndexCounter;
+        }
+
+        // Search in Start Menu
+        const searchInput = document.querySelector('.search-box input');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.style.borderColor = '#0067C0';
+        });
+
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.style.borderColor = 'rgba(0, 0, 0, 0.1)';
+        });
+
+        // Slider interaction
+        document.querySelectorAll('.slider').forEach(slider => {
+            slider.addEventListener('click', (e) => {
+                const rect = slider.getBoundingClientRect();
+                const percent = ((e.clientX - rect.left) / rect.width) * 100;
+                const fill = slider.querySelector('.slider-fill');
+                fill.style.width = percent + '%';
+            });
+        });
+    </script>
+</body>
+</html>
