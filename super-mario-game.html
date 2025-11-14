@@ -1852,7 +1852,8 @@
             document.getElementById('messageOverlay').classList.remove('show');
             game.state = 'playing';
             initGame();
-            gameLoop();
+            gameLoopStarted = true;
+            requestAnimationFrame(gameLoop);
         }
 
         // Update
@@ -2012,6 +2013,9 @@
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+            // Don't draw game objects until initialized
+            if (!player) return;
+
             // Hills
             hills.forEach(hill => hill.draw());
 
@@ -2040,7 +2044,7 @@
             fireballs.forEach(fireball => fireball.draw());
 
             // Player
-            if (player) player.draw();
+            player.draw();
 
             // Flag pole
             if (flagPole) flagPole.draw();
@@ -2089,6 +2093,7 @@
 
         // Game Loop
         let lastTime = 0;
+        let gameLoopStarted = false;
 
         function gameLoop(timestamp) {
             const deltaTime = timestamp - lastTime;
@@ -2097,7 +2102,9 @@
             update(deltaTime);
             draw();
 
-            requestAnimationFrame(gameLoop);
+            if (gameLoopStarted) {
+                requestAnimationFrame(gameLoop);
+            }
         }
 
         // Input
