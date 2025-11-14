@@ -1852,6 +1852,7 @@
             document.getElementById('messageOverlay').classList.remove('show');
             game.state = 'playing';
             initGame();
+            gameLoop();
         }
 
         // Update
@@ -2039,7 +2040,7 @@
             fireballs.forEach(fireball => fireball.draw());
 
             // Player
-            player.draw();
+            if (player) player.draw();
 
             // Flag pole
             if (flagPole) flagPole.draw();
@@ -2121,8 +2122,16 @@
         // Prevent context menu
         canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-        // Start
-        draw();
+        // Initialize game objects on load to prevent errors
+        blocks = [];
+        enemies = [];
+        coins = [];
+        powerups = [];
+        fireballs = [];
+        pipes = [];
+        clouds = [];
+        hills = [];
+        bushes = [];
     </script>
 </body>
 </html>
