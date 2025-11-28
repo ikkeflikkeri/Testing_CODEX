@@ -1,0 +1,13 @@
+{
+  "name": "3d-city-scene",
+  "version": "1.0.0",
+  "description": "A bustling 3D city scene built with Three.js",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 8000",
+    "start": "python3 -m http.server 8000"
+  },
+  "keywords": ["threejs", "3d", "city", "simulation"],
+  "author": "",
+  "license": "MIT"
+}
